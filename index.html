@@ -1,1 +1,412 @@
-<p>Hi</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyth0nScr1pts — a shelf of small Python tools</title>
+<meta name="description" content="A growing collection of small, single-purpose Python scripts. No frameworks, no bloat, just tools that do one thing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #171a23;
+    --bg-raised: #1f2330;
+    --ink: #e9e6df;
+    --ink-dim: #a3a4ab;
+    --rule: #333748;
+    --py-blue: #5b8fc7;
+    --py-yellow: #d9ab3d;
+    --good: #6fae7f;
+  }
+ 
+  * { box-sizing: border-box; }
+ 
+  html { scroll-behavior: smooth; }
+ 
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+ 
+  code, .mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+ 
+  a { color: inherit; }
+ 
+  ::selection { background: var(--py-yellow); color: #1a1a1a; }
+ 
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+ 
+  /* ---------- layout shell ---------- */
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+ 
+  header.site {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  header.site .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 860px;
+  }
+  .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+  }
+  .brand .dot { color: var(--py-yellow); }
+  nav.site-nav a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    text-decoration: none;
+    color: var(--ink-dim);
+    margin-left: 22px;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+  }
+  nav.site-nav a:hover { color: var(--ink); border-bottom-color: var(--py-blue); }
+ 
+  /* ---------- hero: terminal ---------- */
+  .hero {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 64px 28px 40px;
+  }
+  .hero h1 {
+    font-size: clamp(30px, 4.4vw, 42px);
+    line-height: 1.22;
+    font-weight: 600;
+    margin: 0 0 16px;
+    max-width: 15ch;
+  }
+  .hero p.lede {
+    color: var(--ink-dim);
+    font-size: 18px;
+    max-width: 52ch;
+    margin: 0 0 34px;
+  }
+ 
+  .terminal {
+    background: var(--bg-raised);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.6);
+  }
+  .terminal .bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .terminal .bar span {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #4a4e5e;
+  }
+  .terminal .bar .label {
+    margin-left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .terminal .body {
+    padding: 20px 22px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  .terminal .row { display: flex; gap: 10px; margin-bottom: 6px; }
+  .terminal .prompt { color: var(--good); flex-shrink: 0; }
+  .terminal .cmd { color: var(--ink); }
+  .terminal .out { color: var(--ink-dim); margin: 4px 0 14px 24px; }
+  .terminal .out .fname { color: var(--py-blue); }
+  .terminal .caret {
+    display: inline-block;
+    width: 7px; height: 15px;
+    background: var(--py-yellow);
+    margin-left: 2px;
+    animation: blink 1.1s steps(1) infinite;
+    vertical-align: -2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+ 
+  /* ---------- sections ---------- */
+  section { padding: 56px 0; border-top: 1px solid var(--rule); }
+  section .wrap { max-width: 760px; }
+ 
+  h2.section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--py-yellow);
+    font-weight: 500;
+    margin: 0 0 6px;
+  }
+  h2.section-title::before { content: "# "; color: var(--ink-dim); }
+ 
+  section > .wrap > p.section-sub {
+    color: var(--ink-dim);
+    margin: 0 0 34px;
+    max-width: 56ch;
+  }
+ 
+  /* ---------- scripts list ---------- */
+  .script {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 22px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .script:last-child { border-bottom: none; padding-bottom: 0; }
+  .script:first-child { padding-top: 0; }
+ 
+  .script .fname {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--py-blue);
+    word-break: break-word;
+  }
+  .script .fname .ext { color: var(--ink-dim); }
+ 
+  .script .desc h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    font-family: 'Source Serif 4', serif;
+  }
+  .script .desc p {
+    margin: 0 0 10px;
+    color: var(--ink-dim);
+    font-size: 15px;
+  }
+  .script .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #7a7c86;
+  }
+  .script .meta span:not(:last-child)::after { content: "  ·  "; }
+ 
+  @media (max-width: 560px) {
+    .script { grid-template-columns: 1fr; gap: 8px; }
+  }
+ 
+  /* ---------- install ---------- */
+  .install-box {
+    background: var(--bg-raised);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 20px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink-dim);
+  }
+  .install-box .step { margin-bottom: 4px; }
+  .install-box .step:last-child { margin-bottom: 0; }
+  .install-box .pound { color: #5c5f6d; }
+  .install-box .cmd2 { color: var(--ink); }
+ 
+  .principles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 32px;
+    margin-top: 30px;
+  }
+  .principles div h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--py-blue);
+    margin: 0 0 6px;
+    font-weight: 500;
+  }
+  .principles div p {
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: 14.5px;
+  }
+  @media (max-width: 560px) {
+    .principles { grid-template-columns: 1fr; }
+  }
+ 
+  /* ---------- footer / cta ---------- */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 40px 0 54px;
+  }
+  footer .wrap {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .cta-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 1px solid var(--py-yellow);
+    padding-bottom: 2px;
+  }
+  footer .fine {
+    color: #5c5f6d;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+ 
+<header class="site">
+  <div class="wrap">
+    <div class="brand">pyth0n<span class="dot">_</span>scripts</div>
+    <nav class="site-nav">
+      <a href="#scripts">scripts</a>
+      <a href="#install">install</a>
+      <a href="#about">about</a>
+    </nav>
+  </div>
+</header>
+ 
+<div class="hero">
+  <h1>A shelf of small Python tools, each doing exactly one thing.</h1>
+  <p class="lede">No framework, no dependencies you didn't ask for, no 40-file project for a job that fits in one. Clone it, read the one script you need, run it.</p>
+ 
+  <div class="terminal">
+    <div class="bar">
+      <span></span><span></span><span></span>
+      <span class="label">zsh — pyth0nScr1pts</span>
+    </div>
+    <div class="body">
+      <div class="row"><span class="prompt">$</span><span class="cmd">git clone https://github.com/yourname/pyth0nScr1pts.git</span></div>
+      <div class="row"><span class="prompt">$</span><span class="cmd">ls</span></div>
+      <div class="out">
+        <span class="fname">rename_batch.py</span>&nbsp;&nbsp;
+        <span class="fname">img_squeeze.py</span>&nbsp;&nbsp;
+        <span class="fname">dupe_finder.py</span>&nbsp;&nbsp;
+        <span class="fname">csv_diff.py</span>
+      </div>
+      <div class="row"><span class="prompt">$</span><span class="cmd">python3 dupe_finder.py ~/Downloads</span><span class="caret"></span></div>
+    </div>
+  </div>
+</div>
+ 
+<section id="scripts">
+  <div class="wrap">
+    <h2 class="section-title">scripts</h2>
+    <p class="section-sub">Everything here started as a one-off fix for a real annoyance. Kept in if it turned out to be useful more than once.</p>
+ 
+    <div class="script">
+      <div class="fname">rename_batch<span class="ext">.py</span></div>
+      <div class="desc">
+        <h3>Batch renamer with a dry-run mode</h3>
+        <p>Renames files in a folder against a pattern — dates, sequence numbers, find-and-replace — and shows you the diff before touching anything.</p>
+        <div class="meta"><span>stdlib only</span><span>~90 lines</span><span>updated Jul 2026</span></div>
+      </div>
+    </div>
+ 
+    <div class="script">
+      <div class="fname">img_squeeze<span class="ext">.py</span></div>
+      <div class="desc">
+        <h3>Recursive image compressor</h3>
+        <p>Walks a directory tree and re-encodes JPEG/PNG images to a target size ceiling, preserving the folder structure and original files.</p>
+        <div class="meta"><span>needs Pillow</span><span>~120 lines</span><span>updated Jun 2026</span></div>
+      </div>
+    </div>
+ 
+    <div class="script">
+      <div class="fname">dupe_finder<span class="ext">.py</span></div>
+      <div class="desc">
+        <h3>Find duplicate files by content, not name</h3>
+        <p>Hashes files rather than comparing filenames, so it catches copies that got renamed along the way. Prints a list, deletes nothing on its own.</p>
+        <div class="meta"><span>stdlib only</span><span>~60 lines</span><span>updated May 2026</span></div>
+      </div>
+    </div>
+ 
+    <div class="script">
+      <div class="fname">csv_diff<span class="ext">.py</span></div>
+      <div class="desc">
+        <h3>Row-level diff for two CSVs</h3>
+        <p>Compares two versions of a spreadsheet export by a key column and reports which rows were added, removed, or changed, and which fields moved.</p>
+        <div class="meta"><span>stdlib only</span><span>~140 lines</span><span>updated Mar 2026</span></div>
+      </div>
+    </div>
+ 
+    <div class="script">
+      <div class="fname">port_watch<span class="ext">.py</span></div>
+      <div class="desc">
+        <h3>Tiny local port monitor</h3>
+        <p>Polls a list of local ports and pings you (terminal bell or a webhook) the moment something starts or stops listening.</p>
+        <div class="meta"><span>stdlib only</span><span>~50 lines</span><span>updated Feb 2026</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<section id="install">
+  <div class="wrap">
+    <h2 class="section-title">install</h2>
+    <p class="section-sub">There's no package to install. Each script is self-contained — copy the one you want, or clone the whole shelf.</p>
+ 
+    <div class="install-box">
+      <div class="step"><span class="pound">#</span> <span class="cmd2">grab everything</span></div>
+      <div class="step">git clone https://github.com/yourname/pyth0nScr1pts.git</div>
+      <div class="step">&nbsp;</div>
+      <div class="step"><span class="pound">#</span> <span class="cmd2">or just one script</span></div>
+      <div class="step">curl -O https://raw.githubusercontent.com/yourname/pyth0nScr1pts/main/dupe_finder.py</div>
+      <div class="step">&nbsp;</div>
+      <div class="step"><span class="pound">#</span> <span class="cmd2">most need nothing beyond the standard library</span></div>
+      <div class="step">python3 dupe_finder.py --help</div>
+    </div>
+ 
+    <div class="principles">
+      <div>
+        <h4>one file, one job</h4>
+        <p>If a script starts needing a second file, it gets split into its own repo instead.</p>
+      </div>
+      <div>
+        <h4>stdlib first</h4>
+        <p>Third-party dependencies are called out explicitly in the script's own docstring, not hidden in a requirements file.</p>
+      </div>
+      <div>
+        <h4>dry-run where it matters</h4>
+        <p>Anything that renames, deletes, or overwrites shows you what it's about to do first.</p>
+      </div>
+      <div>
+        <h4>read before you run</h4>
+        <p>Every script is short enough to read top to bottom in a couple of minutes. That's on purpose.</p>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<section id="about">
+  <div class="wrap">
+    <h2 class="section-title">about</h2>
+    <p>This shelf gets a new script whenever an afternoon problem is annoying enough to fix properly. Nothing here is trying to be a framework or a product — if you find one useful, that's the whole point. Issues and pull requests for small, focused scripts are welcome; anything that needs its own dependency tree probably belongs in its own repository instead.</p>
+  </div>
+</section>
+ 
+<footer>
+  <div class="wrap">
+    <a class="cta-link" href="https://github.com/yourname/pyth0nScr1pts">View the repository on GitHub</a>
+    <span class="fine">MIT licensed · updated regularly</span>
+  </div>
+</footer>
+ 
+</body>
+</html>
+ 
