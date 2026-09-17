@@ -40,7 +40,12 @@
   }
 
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); overflow-x: clip; }
+  html { 
+    scroll-behavior: smooth; 
+    scroll-padding-top: calc(var(--header-h) + 16px); 
+    overflow-x: clip; 
+    scrollbar-width: none;
+  }
 
   body {
     margin: 0;
@@ -52,6 +57,10 @@
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Edge, Safari */
   }
   body.modal { overflow: hidden; }
 
