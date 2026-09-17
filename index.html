@@ -1012,7 +1012,7 @@
             <li>runs on a laptop CPU</li>
           </ul>
           <div class="actions">
-            <a data-repo-href href="https://github.com/Pyth0nScr1pts">Watch the repository</a>
+            <a data-repo-href href="https://github.com/Pyth0nScr1pts">Follow on GitHub</a>
             <a href="#about">How to contribute</a>
           </div>
         </div>
@@ -1022,7 +1022,7 @@
         <p id="emptyText">No scripts match that search.</p>
         <button type="button" class="link-btn" id="clearSearch">Clear search and filters</button>
       </div>
-      <noscript><p class="empty">Turn on JavaScript to browse the scripts here, or head straight to the repository on GitHub.</p></noscript>
+      <noscript><p class="empty">Turn on JavaScript to browse the scripts here, or head straight to github.com/Pyth0nScr1pts.</p></noscript>
     </div>
   </section>
 
@@ -1031,7 +1031,7 @@
       <div class="section-head" data-reveal>
         <p class="kicker">02 / launch sequence</p>
         <h2 class="section-title">install</h2>
-        <p class="section-sub">There's no package to install. Each script is self-contained, so copy the one you want or clone the whole constellation.</p>
+        <p class="section-sub">There's no package to install. Each script is self-contained and lives in its own small repository under github.com/Pyth0nScr1pts, so clone the one you want or copy the single file.</p>
       </div>
 
       <ol class="steps" id="steps">
@@ -1042,10 +1042,10 @@
         </li>
         <li data-reveal style="--i:1">
           <h3>Get the scripts</h3>
-          <p>Clone everything if you want to browse, or pull down a single file.</p>
-          <div class="cmdline"><code data-cmd="clone">git clone https://github.com/Pyth0nScr1pts/pyth0nScr1pts.git</code><button type="button" class="copy">Copy</button></div>
-          <p class="or">or just one script</p>
-          <div class="cmdline"><code data-cmd="curl">curl -O https://raw.githubusercontent.com/Pyth0nScr1pts/pyth0nScr1pts/main/script.py</code><button type="button" class="copy">Copy</button></div>
+          <p>Every script has its own repository, named after the script. Clone it if you want the readme and sample data, or pull down just the file.</p>
+          <div class="cmdline"><code data-cmd="clone">git clone https://github.com/Pyth0nScr1pts/&lt;script&gt;.git</code><button type="button" class="copy">Copy</button></div>
+          <p class="or">or just the file</p>
+          <div class="cmdline"><code data-cmd="curl">curl -O https://raw.githubusercontent.com/Pyth0nScr1pts/&lt;script&gt;/main/&lt;script&gt;.py</code><button type="button" class="copy">Copy</button></div>
         </li>
         <li data-reveal style="--i:2">
           <h3>Give it a scratch environment</h3>
@@ -1055,7 +1055,7 @@
         <li data-reveal style="--i:3">
           <h3>Read the help, then run it</h3>
           <p>Every script explains its options with <code>--help</code>, prints what it's about to do, and tells you where the output went.</p>
-          <div class="cmdline"><code data-cmd="help">python3 script.py --help</code><button type="button" class="copy">Copy</button></div>
+          <div class="cmdline"><code data-cmd="help">python3 &lt;script&gt;.py --help</code><button type="button" class="copy">Copy</button></div>
         </li>
       </ol>
 
@@ -1114,7 +1114,7 @@
 <footer>
   <div class="horizon" aria-hidden="true"></div>
   <div class="wrap">
-    <a class="cta-link" data-repo-href href="https://github.com/Pyth0nScr1pts/pyth0nScr1pts">View the repository on GitHub →</a>
+    <a class="cta-link" data-repo-href href="https://github.com/Pyth0nScr1pts">github.com/Pyth0nScr1pts →</a>
     <span class="fine status"><span class="live" aria-hidden="true"></span> all systems nominal</span>
     <span class="fine" id="footFine">MIT licensed</span>
     <p class="easter" aria-hidden="true">↑ ↑ ↓ ↓ ← → ← → B A</p>
@@ -1145,12 +1145,13 @@
   /* ============================================================
      Edit these two blocks to update the whole site.
      ============================================================ */
-  const REPO = { user: "Pyth0nScr1pts", name: "pyth0nScr1pts", branch: "main" };
+  const GITHUB = { user: "Pyth0nScr1pts", branch: "main" };
 
   /* Nothing in orbit yet. When the first script lands, add it here and the
      whole site (orbit map, console, list, stats, palette) picks it up.
   {
     file: "example_tool.py",
+    repo: "example_tool",   // optional: the script's own repo under GITHUB.user. Defaults to the file name without .py
     title: "What it does, in one line",
     summary: "Two sentences on what it does and what it never does.",
     deps: [], lines: 80, updated: "2026-09",
@@ -1173,9 +1174,11 @@
   /* ============================================================
      Helpers
      ============================================================ */
-  const REPO_URL = `https://github.com/${REPO.user}/${REPO.name}`;
-  const rawUrl = (f) => `https://raw.githubusercontent.com/${REPO.user}/${REPO.name}/${REPO.branch}/${f}`;
-  const blobUrl = (f) => `${REPO_URL}/blob/${REPO.branch}/${f}`;
+  const GITHUB_URL = `https://github.com/${GITHUB.user}`;
+  const repoOf = (s) => s.repo || s.file.replace(/\.py$/, "");
+  const repoUrl = (s) => `${GITHUB_URL}/${repoOf(s)}`;
+  const rawUrl = (s) => `https://raw.githubusercontent.com/${GITHUB.user}/${repoOf(s)}/${GITHUB.branch}/${s.file}`;
+  const blobUrl = (s) => `${repoUrl(s)}/blob/${GITHUB.branch}/${s.file}`;
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -1223,13 +1226,13 @@
   const totalLines = SCRIPTS.reduce((n, s) => n + s.lines, 0);
   const depCount = new Set(SCRIPTS.flatMap((s) => s.deps)).size;
   const newest = [...SCRIPTS].sort((a, b) => b.updated.localeCompare(a.updated))[0];
-  const exampleFile = newest ? newest.file : "script.py";
+  const example = newest || { file: "<script>.py", repo: "<script>" };  // placeholder until something launches
 
   /* ---------- repo links and install commands ---------- */
-  $$("[data-repo-href]").forEach((a) => (a.href = REPO_URL));
-  $$('[data-cmd="clone"]').forEach((c) => (c.textContent = `git clone ${REPO_URL}.git`));
-  $$('[data-cmd="curl"]').forEach((c) => (c.textContent = `curl -O ${rawUrl(exampleFile)}`));
-  $$('[data-cmd="help"]').forEach((c) => (c.textContent = `python3 ${exampleFile} --help`));
+  $$("[data-repo-href]").forEach((a) => (a.href = GITHUB_URL));
+  $$('[data-cmd="clone"]').forEach((c) => (c.textContent = `git clone ${repoUrl(example)}.git`));
+  $$('[data-cmd="curl"]').forEach((c) => (c.textContent = `curl -O ${rawUrl(example)}`));
+  $$('[data-cmd="help"]').forEach((c) => (c.textContent = `python3 ${example.file} --help`));
 
   $("#scriptSummary").textContent = SCRIPTS.length
     ? `Everything here started as a one-off fix for a real annoyance. ${SCRIPTS.length} scripts so far, ` +
@@ -1270,7 +1273,7 @@
             ["file", "  mission focus .......... machine learning"],
             ["file", "  license ................ MIT"],
             ["warn", "Nothing has launched yet."],
-            ["ok",   "First script is on the pad. Watch the repo to catch it."]
+            ["ok",   `First script is on the pad. Follow ${GITHUB.user} on GitHub to catch it.`]
           ]
     }
   };
@@ -1356,8 +1359,8 @@
         <dl class="flags">${s.flags.map(([f, t]) => `<dt><code>${esc(f)}</code></dt><dd>${esc(t)}</dd>`).join("")}</dl>
         <div class="actions">
           <button type="button" class="link-btn" data-demo="${esc(s.file)}">Watch a sample run</button>
-          <a href="${blobUrl(s.file)}">Read the source</a>
-          <a href="${rawUrl(s.file)}">View raw file</a>
+          <a href="${blobUrl(s)}">Read the source</a>
+          <a href="${rawUrl(s)}">View raw file</a>
         </div>
       </div>`;
     d.addEventListener("toggle", () => { d.open ? state.open.add(s.file) : state.open.delete(s.file); layoutRail(); });
@@ -1961,8 +1964,8 @@
       ...SCRIPTS.map((s) => ({ group: "open", label: `Open ${s.file}`, hint: s.title, kw: s.keywords.join(" "), run: () => openScript(s) })),
       ...SCRIPTS.map((s) => ({ group: "run", label: `Run ${s.file}`, hint: "sample run in mission control", kw: `demo console ${s.keywords.join(" ")}`, run: () => showDemo(s.file) })),
       { group: "run", label: "Run status.py", hint: "mission status readout", kw: "demo console telemetry", run: () => showDemo(STATUS.file) },
-      { group: "action", label: "Copy clone command", hint: `git clone ${REPO.name}`, kw: "git repo clipboard", run: async () => { toast((await copyText(`git clone ${REPO_URL}.git`)) ? "COPIED · git clone" : "COPY FAILED"); } },
-      { group: "action", label: "Open repository on GitHub", hint: REPO_URL.replace("https://", ""), kw: "source code", run: () => window.open(REPO_URL, "_blank", "noopener") },
+      ...(newest ? [{ group: "action", label: `Copy clone command for ${newest.file}`, hint: `git clone ${repoOf(newest)}`, kw: "git repo clipboard", run: async () => { toast((await copyText(`git clone ${repoUrl(newest)}.git`)) ? "COPIED · git clone" : "COPY FAILED"); } }] : []),
+      { group: "action", label: "Open GitHub profile", hint: GITHUB_URL.replace("https://", ""), kw: "source code repo follow", run: () => window.open(GITHUB_URL, "_blank", "noopener") },
       ...(SCRIPTS.length ? [{ group: "action", label: "Focus search", hint: "/", kw: "find filter", run: () => { goTo("#scripts"); setTimeout(() => input.focus({ preventScroll: true }), 50); } }] : []),
       { group: "action", label: sky.on ? "Turn off the starfield" : "Turn on the starfield", hint: "background", kw: "stars sky performance toggle", run: () => { setStars(!sky.on); toast(sky.on ? "STARFIELD ON" : "STARFIELD OFF"); } },
       { group: "action", label: "Engage hyperdrive", hint: "↑↑↓↓←→←→BA", kw: "warp speed easter egg konami", run: hyperdrive }
