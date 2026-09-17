@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pyth0nScr1pts: a constellation of small Python tools</title>
-<meta name="description" content="A growing collection of small, single-purpose Python scripts. No frameworks, no bloat, just tools that do one thing.">
+<title>Pyth0nScr1pts: small machine learning tools in Python</title>
+<meta name="description" content="A growing constellation of small, single-purpose Python scripts for machine learning work. No framework wrappers, no notebook sprawl, just tools that do one thing.">
 <meta name="theme-color" content="#05070f">
-<meta property="og:title" content="Pyth0nScr1pts: a constellation of small Python tools">
-<meta property="og:description" content="Small, single-purpose Python scripts you can read in two minutes and run right away.">
+<meta property="og:title" content="Pyth0nScr1pts: small machine learning tools in Python">
+<meta property="og:description" content="Small, single-file machine learning tools you can read in two minutes and run on your own data.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐍</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +40,13 @@
   }
 
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); overflow-x: clip; }
+  html {
+    scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); overflow-x: clip;
+    /* no page scrollbar: the progress bar and flight rail show where you are */
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  [hidden] { display: none !important; }
 
   body {
     margin: 0;
@@ -262,7 +268,7 @@
     font-size: clamp(40px, 5.6vw, 66px);
     line-height: 1.02; font-weight: 700;
     letter-spacing: -0.035em;
-    margin: 0 0 22px; max-width: 14ch;
+    margin: 0 0 22px; max-width: 15ch;
     text-wrap: balance;
   }
   .hero h1 .w { display: inline-block; }
@@ -332,6 +338,11 @@
     transition: fill .2s; pointer-events: none;
   }
   .orbit-map .planet:hover .plabel, .orbit-map .planet[aria-pressed="true"] .plabel { fill: var(--ink); }
+  .orbit-map .ring.faint { opacity: .35; }
+  .orbit-map .slot-body { stroke-dasharray: 3 3; transition: stroke .2s; }
+  .orbit-map .slot-plus { stroke-width: 1.5; stroke-linecap: round; transition: stroke .2s; }
+  .orbit-map .planet.slot:hover .slot-body, .orbit-map .planet.slot:focus-visible .slot-body,
+  .orbit-map .planet.slot:hover .slot-plus, .orbit-map .planet.slot:focus-visible .slot-plus { stroke: var(--yellow); }
   .orbit-map .sun-text { font-family: var(--mono); font-size: 13px; font-weight: 700; fill: #2a1d00; }
   .orbit-map .sun-pulse {
     transform-box: fill-box; transform-origin: center;
@@ -354,6 +365,7 @@
   .orbit-legend .sw { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
   .orbit-legend .sw.std { background: var(--blue); }
   .orbit-legend .sw.dep { background: var(--yellow); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--yellow); }
+  .orbit-legend .sw.slot { background: none; border: 1px dashed var(--ink-faint); }
 
   @media (max-width: 860px) {
     .hero { padding-top: 56px; }
@@ -466,9 +478,62 @@
     display: block; font-family: var(--mono); font-size: 32px; font-weight: 600; line-height: 1.1;
     color: var(--ink); letter-spacing: -.02em; font-variant-numeric: tabular-nums;
   }
-  .stats b::after { content: attr(data-suffix); font-size: 16px; color: var(--ink-faint); margin-left: 2px; }
+  .stats b.txt { font-size: 24px; letter-spacing: .04em; text-transform: uppercase; padding-top: 6px; color: var(--blue); }
   .stats span { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); letter-spacing: .05em; text-transform: uppercase; }
   @media (max-width: 700px) { .stats { grid-template-columns: 1fr 1fr; } }
+
+  /* ---------- launch pad (shown while nothing is in orbit) ---------- */
+  .launchpad {
+    position: relative; overflow: hidden;
+    display: grid; grid-template-columns: 200px 1fr; gap: 36px; align-items: center;
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 18px;
+    padding: 34px 36px;
+  }
+  .launchpad::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(520px circle at 0% 50%, rgba(110, 168, 255, .12), transparent 55%);
+  }
+  .radar {
+    position: relative; width: 200px; height: 200px; border-radius: 50%;
+    border: 1px solid var(--rule-2); overflow: hidden;
+    background: radial-gradient(circle at center, rgba(110, 168, 255, .1), rgba(5, 7, 15, .4) 70%);
+    box-shadow: 0 0 60px -20px var(--glow), inset 0 0 40px -20px var(--glow);
+  }
+  .radar i { position: absolute; display: block; border-radius: 50%; }
+  .radar .ring { inset: 0; border: 1px dashed var(--rule-2); }
+  .radar .ring.r2 { inset: 33px; }
+  .radar .ring.r3 { inset: 66px; }
+  .radar .cross { inset: 0; border-radius: 0; background:
+    linear-gradient(var(--rule) 1px, transparent 1px) center / 100% 50% no-repeat,
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px) center / 50% 100% no-repeat; opacity: .8; }
+  .radar .sweep {
+    inset: 0;
+    background: conic-gradient(from 0deg, transparent 55%, rgba(110, 168, 255, .06) 75%, rgba(110, 168, 255, .5) 100%);
+    animation: radarspin 4s linear infinite;
+  }
+  .radar .blip {
+    left: 62%; top: 29%; width: 7px; height: 7px;
+    background: var(--yellow); box-shadow: 0 0 12px var(--yellow);
+    animation: blip 4s linear infinite;
+  }
+  .radar .center { left: 50%; top: 50%; width: 6px; height: 6px; transform: translate(-50%, -50%); background: var(--blue); box-shadow: 0 0 10px var(--blue); }
+  @keyframes radarspin { to { transform: rotate(360deg); } }
+  @keyframes blip { 0%, 7% { opacity: .15; } 10%, 16% { opacity: 1; } 60%, 100% { opacity: .15; } }
+  .lp-copy { position: relative; }
+  .launchpad h3 { font-size: 28px; font-weight: 700; letter-spacing: -.025em; margin: 0 0 12px; line-height: 1.15; }
+  .launchpad p { color: var(--ink-dim); margin: 0 0 16px; max-width: 58ch; }
+  .lp-promises { list-style: none; padding: 0; margin: 0 0 22px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .lp-promises li {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-dim);
+    border: 1px solid var(--rule-2); border-radius: 999px; padding: 4px 12px;
+    background: rgba(5, 7, 15, .5);
+  }
+  .lp-promises li::before { content: "✓ "; color: var(--good); }
+  .launchpad .actions { margin-top: 0; }
+  @media (max-width: 700px) {
+    .launchpad { grid-template-columns: 1fr; padding: 28px 24px; }
+    .radar { margin: 0 auto; }
+  }
 
   /* ---------- sections ---------- */
   section { padding: 72px 0; position: relative; }
@@ -741,7 +806,8 @@
   }
   .palette-input input::placeholder { color: var(--ink-faint); }
   .palette-input kbd { font-size: 11px; color: var(--ink-faint); border: 1px solid var(--rule-2); border-radius: 4px; padding: 1px 6px; }
-  .palette-list { list-style: none; margin: 0; padding: 8px; max-height: 50vh; overflow-y: auto; }
+  .palette-list { list-style: none; margin: 0; padding: 8px; max-height: 50vh; overflow-y: auto; scrollbar-width: none; }
+  .palette-list::-webkit-scrollbar { display: none; }
   .palette-list li {
     display: grid; grid-template-columns: 62px 1fr auto; align-items: center; gap: 12px;
     padding: 10px 12px; border-radius: 9px; cursor: pointer; font-size: 14.5px;
@@ -791,6 +857,8 @@
     .orbit-map .sun-pulse { animation: none; opacity: .3; }
     .terminal .caret { animation: none; }
     .live { animation: none; }
+    .radar .sweep { animation: none; opacity: .5; }
+    .radar .blip { animation: none; opacity: 1; }
   }
 </style>
 </head>
@@ -835,21 +903,22 @@
   <div class="hero">
     <div class="hero-top">
       <div class="hero-copy px" style="--px:.06">
-        <p class="eyebrow" data-reveal>ls ~/tools <span class="cmt"># one job each, nothing else</span></p>
+        <p class="eyebrow" data-reveal>ls ~/ml-tools <span class="cmt"># one job each, nothing else</span></p>
         <h1>
           <span class="w" style="--i:0">A</span>
           <span class="w grad" style="--i:1">constellation</span>
           <span class="w" style="--i:2">of</span>
           <span class="w" style="--i:3">small</span>
-          <span class="w" style="--i:4">Python</span>
-          <span class="w" style="--i:5">tools,</span>
-          <span class="w" style="--i:6">each</span>
-          <span class="w" style="--i:7">doing</span>
-          <span class="w" style="--i:8">exactly</span>
-          <span class="w" style="--i:9">one</span>
-          <span class="w" style="--i:10">thing.</span>
+          <span class="w" style="--i:4">machine</span>
+          <span class="w" style="--i:5">learning</span>
+          <span class="w" style="--i:6">tools,</span>
+          <span class="w" style="--i:7">each</span>
+          <span class="w" style="--i:8">doing</span>
+          <span class="w" style="--i:9">exactly</span>
+          <span class="w" style="--i:10">one</span>
+          <span class="w" style="--i:11">thing.</span>
         </h1>
-        <p class="lede" data-reveal style="--i:2">No framework, no dependencies you didn't ask for, no 40-file project for a job that fits in one. Clone it, read the one script you need, run it.</p>
+        <p class="lede" data-reveal style="--i:2">Plain Python, one file per job. No framework wrappers, no notebook sprawl, no 40-file repo for something that fits on one screen. Clone it, read the one script you need, run it on your own data.</p>
         <div class="hero-actions" data-reveal style="--i:3">
           <a class="btn primary" href="#scripts">Browse the scripts ↓</a>
           <button class="btn ghost" type="button" data-open-palette>Command palette <kbd id="paletteKey2">Ctrl K</kbd></button>
@@ -863,6 +932,7 @@
             <div class="orbit-legend">
               <span><span class="sw std"></span>stdlib only</span>
               <span><span class="sw dep"></span>ringed: needs a package</span>
+              <span><span class="sw slot"></span>dashed: open slot</span>
               <span>bigger planet, longer script</span>
             </div>
           </figcaption>
@@ -878,7 +948,7 @@
         <button class="term-rerun" id="rerun" type="button" title="Run again" aria-label="Run the sample again">↻</button>
       </div>
       <div class="body" id="termBody" role="tabpanel" aria-hidden="true">
-        <div class="row"><span class="prompt">$</span><span class="cmd">python3 dupe_finder.py ~/Downloads</span></div>
+        <div class="row"><span class="prompt">$</span><span class="cmd">python3 status.py --verbose</span></div>
       </div>
       <p class="sr-only" id="termStatus" aria-live="polite"></p>
     </div>
@@ -922,6 +992,32 @@
 
       <p class="result-count" id="resultCount" aria-live="polite"></p>
       <div id="scriptList"></div>
+
+      <div class="launchpad" id="launchpad" hidden>
+        <div class="radar" aria-hidden="true">
+          <i class="cross"></i>
+          <i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i>
+          <i class="sweep"></i>
+          <i class="blip"></i>
+          <i class="center"></i>
+        </div>
+        <div class="lp-copy">
+          <p class="kicker">T-minus · first launch</p>
+          <h3>Nothing in orbit yet.</h3>
+          <p>The first scripts are on the pad. Each one will be a small, single-file machine learning tool for the work around the model: cleaning a dataset, sanity-checking a training run, comparing two sets of predictions. The code you end up rewriting every project.</p>
+          <ul class="lp-promises">
+            <li>one file, one job</li>
+            <li>stdlib or one named dependency</li>
+            <li><code>--help</code> and a dry run</li>
+            <li>runs on a laptop CPU</li>
+          </ul>
+          <div class="actions">
+            <a data-repo-href href="https://github.com/Pyth0nScr1pts">Watch the repository</a>
+            <a href="#about">How to contribute</a>
+          </div>
+        </div>
+      </div>
+
       <div class="empty" id="empty" hidden>
         <p id="emptyText">No scripts match that search.</p>
         <button type="button" class="link-btn" id="clearSearch">Clear search and filters</button>
@@ -947,14 +1043,19 @@
         <li data-reveal style="--i:1">
           <h3>Get the scripts</h3>
           <p>Clone everything if you want to browse, or pull down a single file.</p>
-          <div class="cmdline"><code data-cmd="clone">git clone https://github.com/yourname/pyth0nScr1pts.git</code><button type="button" class="copy">Copy</button></div>
+          <div class="cmdline"><code data-cmd="clone">git clone https://github.com/Pyth0nScr1pts/pyth0nScr1pts.git</code><button type="button" class="copy">Copy</button></div>
           <p class="or">or just one script</p>
-          <div class="cmdline"><code data-cmd="curl">curl -O https://raw.githubusercontent.com/yourname/pyth0nScr1pts/main/dupe_finder.py</code><button type="button" class="copy">Copy</button></div>
+          <div class="cmdline"><code data-cmd="curl">curl -O https://raw.githubusercontent.com/Pyth0nScr1pts/pyth0nScr1pts/main/script.py</code><button type="button" class="copy">Copy</button></div>
         </li>
         <li data-reveal style="--i:2">
+          <h3>Give it a scratch environment</h3>
+          <p>Some scripts lean on numpy, scikit-learn, or torch. Each one names what it needs at the top of the file, so install that inside a virtual environment and keep your system Python clean. On Windows the second command is <code>.venv\Scripts\activate</code>.</p>
+          <div class="cmdline"><code>python3 -m venv .venv &amp;&amp; source .venv/bin/activate</code><button type="button" class="copy">Copy</button></div>
+        </li>
+        <li data-reveal style="--i:3">
           <h3>Read the help, then run it</h3>
-          <p>Every script explains its options with <code>--help</code>. Scripts that need a package say so at the top of the file.</p>
-          <div class="cmdline"><code>python3 dupe_finder.py --help</code><button type="button" class="copy">Copy</button></div>
+          <p>Every script explains its options with <code>--help</code>, prints what it's about to do, and tells you where the output went.</p>
+          <div class="cmdline"><code data-cmd="help">python3 script.py --help</code><button type="button" class="copy">Copy</button></div>
         </li>
       </ol>
 
@@ -965,14 +1066,22 @@
           <p>If a script starts needing a second file, it gets split into its own repo instead.</p>
         </div>
         <div data-reveal style="--i:1">
-          <h3>stdlib first</h3>
-          <p>Third-party dependencies are called out in the script's own docstring, not hidden in a requirements file.</p>
+          <h3>stdlib first, numpy second</h3>
+          <p>Third-party dependencies are named in the script's own docstring, not hidden in a requirements file. One is fine. Four is a project.</p>
         </div>
         <div data-reveal style="--i:2">
           <h3>dry-run where it matters</h3>
-          <p>Anything that renames, deletes, or overwrites shows you what it's about to do first.</p>
+          <p>Anything that writes, overwrites, or retrains shows you the plan first and waits for a flag.</p>
         </div>
         <div data-reveal style="--i:3">
+          <h3>reproducible by default</h3>
+          <p>Seeds are set, versions are printed, and outputs land in a folder you chose, not next to your data.</p>
+        </div>
+        <div data-reveal style="--i:4">
+          <h3>runs on a laptop</h3>
+          <p>A CPU and a small sample dataset are enough to see it work. GPUs are a speed-up, never a requirement.</p>
+        </div>
+        <div data-reveal style="--i:5">
           <h3>read before you run</h3>
           <p>Every script is short enough to read top to bottom in a couple of minutes. That's on purpose.</p>
         </div>
@@ -988,12 +1097,13 @@
       </div>
       <div class="transmission" data-reveal style="--i:1">
         <div class="tx-head"><span class="live" aria-hidden="true"></span> incoming transmission</div>
-        <p>This constellation gets a new script whenever an afternoon problem is annoying enough to fix properly. Nothing here is trying to be a framework or a product. If you find one useful, that's the whole point.</p>
+        <p>This constellation gets a new script whenever a machine learning chore is annoying enough to fix properly: the data wrangling, the sanity checks, the evaluation glue that isn't the model but eats the afternoon anyway. Nothing here is trying to be a framework or a product. If you find one useful, that's the whole point.</p>
         <p>Issues and pull requests are welcome. A good contribution usually looks like this:</p>
         <ul class="contrib">
           <li>A single file that solves one specific, recurring problem.</li>
-          <li>Standard library only, or one clearly named dependency.</li>
-          <li>A <code>--help</code> message and a dry-run mode if it changes files.</li>
+          <li>Standard library only, or one clearly named dependency like numpy, scikit-learn, or torch.</li>
+          <li>A <code>--help</code> message and a dry-run mode if it changes files or retrains anything.</li>
+          <li>Runs on a CPU in reasonable time, with a tiny sample dataset or a way to generate one.</li>
           <li>Short enough that someone can read it before they run it.</li>
         </ul>
       </div>
@@ -1004,7 +1114,7 @@
 <footer>
   <div class="horizon" aria-hidden="true"></div>
   <div class="wrap">
-    <a class="cta-link" data-repo-href href="https://github.com/yourname/pyth0nScr1pts">View the repository on GitHub →</a>
+    <a class="cta-link" data-repo-href href="https://github.com/Pyth0nScr1pts/pyth0nScr1pts">View the repository on GitHub →</a>
     <span class="fine status"><span class="live" aria-hidden="true"></span> all systems nominal</span>
     <span class="fine" id="footFine">MIT licensed</span>
     <p class="easter" aria-hidden="true">↑ ↑ ↓ ↓ ← → ← → B A</p>
@@ -1035,129 +1145,30 @@
   /* ============================================================
      Edit these two blocks to update the whole site.
      ============================================================ */
-  const REPO = { user: "yourname", name: "pyth0nScr1pts", branch: "main" };
+  const REPO = { user: "Pyth0nScr1pts", name: "pyth0nScr1pts", branch: "main" };
 
-  const SCRIPTS = [
-    {
-      file: "rename_batch.py",
-      title: "Batch renamer with a dry-run mode",
-      summary: "Renames files in a folder against a pattern (dates, sequence numbers, find-and-replace) and shows you the plan before touching anything.",
-      deps: [], lines: 90, updated: "2026-07",
-      keywords: ["rename", "files", "bulk", "pattern", "photos", "date", "replace"],
-      flags: [
-        ["FOLDER", "The folder whose files you want to rename."],
-        ["--pattern TEMPLATE", "New name template using {date}, {n}, {name} and {ext}."],
-        ["--find / --replace", "Swap text inside existing names instead of using a template."],
-        ["--apply", "Actually rename. Without it, the script only prints the plan."]
-      ],
-      demo: {
-        cmd: 'python3 rename_batch.py ./trip-photos --pattern "{date}_{n:03}"',
-        out: [
-          ["dim",  "Dry run. Nothing has been renamed."],
-          ["file", "  IMG_4021.jpg   ->  2026-07-04_001.jpg"],
-          ["file", "  IMG_4022.jpg   ->  2026-07-04_002.jpg"],
-          ["file", "  IMG_4107.jpg   ->  2026-07-05_003.jpg"],
-          ["ok",   "3 files would change. Re-run with --apply to rename them."]
-        ]
-      }
-    },
-    {
-      file: "img_squeeze.py",
-      title: "Recursive image compressor",
-      summary: "Walks a directory tree and re-encodes JPEG and PNG images to a size ceiling, keeping the folder structure and leaving the originals alone.",
-      deps: ["Pillow"], lines: 120, updated: "2026-06",
-      keywords: ["compress", "images", "photos", "resize", "jpeg", "png", "website", "smaller"],
-      flags: [
-        ["FOLDER", "Where to look for images. Subfolders are included."],
-        ["--max-kb N", "Target ceiling per image, in kilobytes."],
-        ["--out DIR", "Where compressed copies go. Defaults to ./squeezed."],
-        ["--quality N", "Starting JPEG quality before stepping down (default 85)."]
-      ],
-      demo: {
-        cmd: "python3 img_squeeze.py ~/site/images --max-kb 300 --out ./squeezed",
-        out: [
-          ["dim",  "Scanning ~/site/images"],
-          ["file", "  hero.png          2.4 MB  ->  288 KB"],
-          ["file", "  team/alex.jpg     910 KB  ->  241 KB"],
-          ["dim",  "  logo.svg          skipped, not JPEG or PNG"],
-          ["ok",   "48 images checked, 31 re-encoded, 41.2 MB saved. Originals untouched."]
-        ]
-      }
-    },
-    {
-      file: "dupe_finder.py",
-      title: "Find duplicate files by content, not name",
-      summary: "Hashes files rather than comparing filenames, so it catches copies that got renamed along the way. Prints a list and never deletes anything on its own.",
-      deps: [], lines: 60, updated: "2026-05",
-      keywords: ["duplicate", "copies", "hash", "clean up", "disk space", "downloads", "storage"],
-      flags: [
-        ["FOLDER", "The folder to scan, including subfolders."],
-        ["--min-size KB", "Skip files smaller than this to speed things up."],
-        ["--ext LIST", "Only check certain extensions, like jpg,png,pdf."],
-        ["--json", "Print results as JSON for use in other scripts."]
-      ],
-      demo: {
-        cmd: "python3 dupe_finder.py ~/Downloads",
-        out: [
-          ["dim",  "Hashed 1,204 files (3.1 GB)"],
-          ["warn", "Group 1: 2 copies, 84 MB each"],
-          ["file", "  ~/Downloads/installer.dmg"],
-          ["file", "  ~/Downloads/installer (1).dmg"],
-          ["warn", "Group 2: 3 copies, 2.1 MB each"],
-          ["file", "  ~/Downloads/lease.pdf"],
-          ["file", "  ~/Downloads/lease-final.pdf"],
-          ["file", "  ~/Downloads/old/scan_0012.pdf"],
-          ["ok",   "2 groups found, 88 MB reclaimable. Nothing was deleted."]
-        ]
-      }
-    },
-    {
-      file: "csv_diff.py",
-      title: "Row-level diff for two CSVs",
-      summary: "Compares two versions of a spreadsheet export by a key column and reports which rows were added, removed, or changed, and which fields moved.",
-      deps: [], lines: 140, updated: "2026-03",
-      keywords: ["csv", "spreadsheet", "compare", "diff", "changes", "export", "excel"],
-      flags: [
-        ["OLD NEW", "The two CSV files to compare, older one first."],
-        ["--key COLUMN", "Column that identifies each row, like id or email."],
-        ["--ignore COLS", "Columns to leave out of the comparison."],
-        ["--delimiter CHAR", "Use something other than a comma, like ; or a tab."]
-      ],
-      demo: {
-        cmd: "python3 csv_diff.py orders_june.csv orders_july.csv --key order_id",
-        out: [
-          ["add",  "+ 1042   added"],
-          ["del",  "- 0987   removed"],
-          ["chg",  "~ 1011   status: pending -> shipped"],
-          ["chg",  "~ 1019   total: 42.00 -> 38.50"],
-          ["ok",   "1 added, 1 removed, 2 changed, 318 unchanged"]
-        ]
-      }
-    },
-    {
-      file: "port_watch.py",
-      title: "Tiny local port monitor",
-      summary: "Polls a list of local ports and alerts you with a terminal bell or a webhook the moment something starts or stops listening.",
-      deps: [], lines: 50, updated: "2026-02",
-      keywords: ["port", "server", "monitor", "network", "localhost", "webhook", "alert"],
-      flags: [
-        ["PORTS", "One or more port numbers to watch."],
-        ["--interval SECONDS", "How often to check (default 5)."],
-        ["--webhook URL", "Send a JSON POST to this URL on every change."],
-        ["--no-bell", "Stay quiet in the terminal."]
-      ],
-      demo: {
-        cmd: "python3 port_watch.py 3000 5432 8080 --interval 2",
-        out: [
-          ["dim",  "Watching 3 ports every 2s. Press Ctrl+C to stop."],
-          ["ok",   "14:02:11   5432 is listening"],
-          ["ok",   "14:02:11   8080 is listening"],
-          ["warn", "14:05:37   3000 started listening"],
-          ["del",  "14:09:02   8080 stopped listening"]
-        ]
-      }
+  /* Nothing in orbit yet. When the first script lands, add it here and the
+     whole site (orbit map, console, list, stats, palette) picks it up.
+  {
+    file: "example_tool.py",
+    title: "What it does, in one line",
+    summary: "Two sentences on what it does and what it never does.",
+    deps: [], lines: 80, updated: "2026-09",
+    keywords: ["words", "people", "would", "search"],
+    flags: [
+      ["DATA", "The file or folder it reads."],
+      ["--apply", "Actually write. Without it, the script only prints the plan."]
+    ],
+    demo: {
+      cmd: "python3 example_tool.py data.csv",
+      out: [
+        ["dim", "Reading data.csv"],
+        ["ok",  "Done. 3 things happened."]
+      ]
     }
-  ];
+  }
+  */
+  const SCRIPTS = [];
 
   /* ============================================================
      Helpers
@@ -1177,7 +1188,7 @@
     return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
   };
   const needsLabel = (s) => (s.deps.length ? `needs ${s.deps.join(", ")}` : "stdlib only");
-  const MAX_LINES = Math.max(...SCRIPTS.map((s) => s.lines));
+  const MAX_LINES = Math.max(1, ...SCRIPTS.map((s) => s.lines));
   const root = document.documentElement;
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || "");
   const scrollBehavior = () => (reduceMotion.matches ? "auto" : "smooth");
@@ -1186,13 +1197,9 @@
   $("#paletteKey").textContent = isMac ? "⌘ K" : "Ctrl K";
   $("#paletteKey2").textContent = isMac ? "⌘ K" : "Ctrl K";
 
-  /* 24x24 line icons, one per script */
+  /* 24x24 line icons, keyed by file name. Anything without one gets the fallback. */
   const ICONS = {
-    "rename_batch.py": '<path d="M3 11.5V5a2 2 0 0 1 2-2h6.5l9.5 9.5-8.5 8.5L3 11.5z"/><circle cx="7.5" cy="7.5" r="1.4"/><path d="M11 13l2.5 2.5M13 11l2.5 2.5"/>',
-    "img_squeeze.py": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 16 5-5 4 4 2.5-2.5L21 19"/><circle cx="16" cy="9" r="1.4"/>',
-    "dupe_finder.py": '<rect x="8.5" y="3" width="12" height="14" rx="2"/><path d="M15.5 17v2a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3"/><path d="M11.5 8h6M11.5 11h6"/>',
-    "csv_diff.py": '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18M9 4v16"/><path d="M12.5 15h5M15 12.5v5"/>',
-    "port_watch.py": '<circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19a10 10 0 0 1 0-14"/>'
+    /* "example_tool.py": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>', */
   };
   const FALLBACK_ICON = '<path d="M8 4 4 8l4 4M16 12l4 4-4 4M14 4l-4 16"/>';
   const iconSvg = (file) =>
@@ -1211,26 +1218,63 @@
     toastT = setTimeout(() => toastEl.classList.remove("show"), 2200);
   }
 
-  /* ---------- repo links and install commands ---------- */
-  $$("[data-repo-href]").forEach((a) => (a.href = REPO_URL));
-  $$('[data-cmd="clone"]').forEach((c) => (c.textContent = `git clone ${REPO_URL}.git`));
-  $$('[data-cmd="curl"]').forEach((c) => (c.textContent = `curl -O ${rawUrl("dupe_finder.py")}`));
-
   /* ---------- summary line, telemetry, footer ---------- */
   const stdCount = SCRIPTS.filter((s) => !s.deps.length).length;
   const totalLines = SCRIPTS.reduce((n, s) => n + s.lines, 0);
   const depCount = new Set(SCRIPTS.flatMap((s) => s.deps)).size;
   const newest = [...SCRIPTS].sort((a, b) => b.updated.localeCompare(a.updated))[0];
-  $("#scriptSummary").textContent =
-    `Everything here started as a one-off fix for a real annoyance. ${SCRIPTS.length} scripts so far, ` +
-    `${stdCount} of them run on the standard library alone. Open any one to see how to use it.`;
-  $("#footFine").textContent = `MIT licensed. Last updated ${monthLabel(newest.updated)}.`;
-  $("#stats").innerHTML = [
-    [SCRIPTS.length, "", "scripts in orbit"],
-    [stdCount, "", "stdlib only"],
-    [totalLines, "", "lines, total"],
-    [depCount, "", depCount === 1 ? "dependency" : "dependencies"]
-  ].map(([n, suf, label]) => `<li><b data-count="${n}" data-suffix="${suf}">0</b><span>${label}</span></li>`).join("");
+  const exampleFile = newest ? newest.file : "script.py";
+
+  /* ---------- repo links and install commands ---------- */
+  $$("[data-repo-href]").forEach((a) => (a.href = REPO_URL));
+  $$('[data-cmd="clone"]').forEach((c) => (c.textContent = `git clone ${REPO_URL}.git`));
+  $$('[data-cmd="curl"]').forEach((c) => (c.textContent = `curl -O ${rawUrl(exampleFile)}`));
+  $$('[data-cmd="help"]').forEach((c) => (c.textContent = `python3 ${exampleFile} --help`));
+
+  $("#scriptSummary").textContent = SCRIPTS.length
+    ? `Everything here started as a one-off fix for a real annoyance. ${SCRIPTS.length} scripts so far, ` +
+      `${stdCount} of them run on the standard library alone. Open any one to see how to use it.`
+    : "Nothing here yet. The first scripts are being written now: small, single-purpose machine learning tools " +
+      "you can read in two minutes and run on your own data.";
+  $("#footFine").textContent = newest
+    ? `MIT licensed. Last updated ${monthLabel(newest.updated)}.`
+    : "MIT licensed. Awaiting first launch.";
+
+  const STATS = SCRIPTS.length
+    ? [[SCRIPTS.length, "scripts in orbit"], [stdCount, "stdlib only"], [totalLines, "lines, total"], [depCount, depCount === 1 ? "dependency" : "dependencies"]]
+    : [[0, "scripts in orbit"], ["ML", "mission focus"], ["MIT", "license"], ["soon", "first launch"]];
+  $("#stats").innerHTML = STATS.map(([v, label]) =>
+    typeof v === "number"
+      ? `<li><b data-count="${v}">0</b><span>${esc(label)}</span></li>`
+      : `<li><b class="txt">${esc(v)}</b><span>${esc(label)}</span></li>`
+  ).join("");
+
+  /* the console's permanent first tab: a status readout built from the data above */
+  const STATUS = {
+    file: "status.py",
+    title: "Mission status",
+    demo: {
+      cmd: "python3 status.py --verbose",
+      out: SCRIPTS.length
+        ? [
+            ["dim",  "Checking the constellation..."],
+            ["file", `  scripts in orbit ....... ${SCRIPTS.length}`],
+            ["file", `  stdlib only ............ ${stdCount}`],
+            ["file", `  newest ................. ${newest.file} (${monthLabel(newest.updated)})`],
+            ["file", "  mission focus .......... machine learning"],
+            ["ok",   "All systems nominal."]
+          ]
+        : [
+            ["dim",  "Checking the constellation..."],
+            ["file", "  scripts in orbit ....... 0"],
+            ["file", "  mission focus .......... machine learning"],
+            ["file", "  license ................ MIT"],
+            ["warn", "Nothing has launched yet."],
+            ["ok",   "First script is on the pad. Watch the repo to catch it."]
+          ]
+    }
+  };
+  const DEMOS = [STATUS, ...SCRIPTS];
 
   /* ============================================================
      Scroll reveal + counters
@@ -1274,6 +1318,8 @@
   const input = $("#q");
   const sortSel = $("#sort");
   const empty = $("#empty");
+  const toolbar = $(".toolbar");
+  const launchpad = $("#launchpad");
   input.value = state.q;
   sortSel.value = state.sort;
 
@@ -1319,6 +1365,18 @@
   }
 
   function renderList() {
+    if (!SCRIPTS.length) {
+      // nothing in orbit: swap the toolbar and list for the launch pad
+      toolbar.hidden = true;
+      launchpad.hidden = false;
+      launchpad.dataset.reveal = "";
+      empty.hidden = true;
+      $("#resultCount").textContent = "";
+      list.replaceChildren();
+      observeReveals();
+      layoutRail();
+      return;
+    }
     const q = state.q.trim().toLowerCase();
     let items = SCRIPTS.filter((s) =>
       state.filter === "all" ? true : state.filter === "stdlib" ? !s.deps.length : s.deps.length > 0
@@ -1455,20 +1513,31 @@
       <filter id="f-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="8"/></filter>
     </defs>`;
 
-    let rings = "", planets = "";
-    SCRIPTS.forEach((s, i) => {
-      const r = n === 1 ? (rMin + rMax) / 2 : rMin + ((rMax - rMin) * i) / (n - 1);
-      const pr = +(6 + (s.lines / MAX_LINES) * 7.5).toFixed(1);
+    // one orbit per script, one for the open slot, and faint spares so the map never looks bare
+    const total = Math.max(n + 1, 4);
+    const radius = (i) => rMin + ((rMax - rMin) * i) / (total - 1);
+    const orbit = (i, inner) => {
       const dur = 30 + i * 12;
       const start = Math.round((i * 137.5 + 24) % 360);
+      const spin = motion ? `<animateTransform attributeName="transform" type="rotate" from="${start} ${C} ${C}" to="${start + 360} ${C} ${C}" dur="${dur}s" repeatCount="indefinite"/>` : "";
+      const unspin = motion ? `<animateTransform attributeName="transform" type="rotate" from="${-start} 0 0" to="${-start - 360} 0 0" dur="${dur}s" repeatCount="indefinite"/>` : "";
+      return `<g class="spin" transform="rotate(${start} ${C} ${C})">${spin}${inner(start, unspin)}</g>`;
+    };
+
+    let rings = "", planets = "";
+    for (let i = 0; i < total; i++) {
+      const s = SCRIPTS[i];
+      const cls = s ? "ring" : i === n ? "ring" : "ring faint";
+      rings += `<circle class="${cls}"${s ? ` data-file="${esc(s.file)}"` : ""} cx="${C}" cy="${C}" r="${radius(i).toFixed(1)}"/>`;
+    }
+
+    SCRIPTS.forEach((s, i) => {
+      const r = radius(i);
+      const pr = +(6 + (s.lines / MAX_LINES) * 7.5).toFixed(1);
       const dep = s.deps.length > 0;
       const color = dep ? "var(--yellow)" : "var(--blue)";
       const label = s.file.replace(/\.py$/, "");
-      rings += `<circle class="ring" data-file="${esc(s.file)}" cx="${C}" cy="${C}" r="${r.toFixed(1)}"/>`;
-      const spin = motion ? `<animateTransform attributeName="transform" type="rotate" from="${start} ${C} ${C}" to="${start + 360} ${C} ${C}" dur="${dur}s" repeatCount="indefinite"/>` : "";
-      const unspin = motion ? `<animateTransform attributeName="transform" type="rotate" from="${-start} 0 0" to="${-start - 360} 0 0" dur="${dur}s" repeatCount="indefinite"/>` : "";
-      planets += `
-        <g class="spin" transform="rotate(${start} ${C} ${C})">${spin}
+      planets += orbit(i, (start, unspin) => `
           <g class="planet${dep ? " dep" : ""}" transform="translate(${(C + r).toFixed(1)} ${C})" data-file="${esc(s.file)}"
              tabindex="0" role="button" aria-pressed="false"
              aria-label="${esc(s.file)}: ${esc(s.title)}. About ${s.lines} lines, ${esc(needsLabel(s))}.">
@@ -1480,9 +1549,20 @@
               <circle class="body" r="${pr}" fill="url(#g-${dep ? "yellow" : "blue"})"/>
               <text class="plabel" y="${pr + 14}" text-anchor="middle">${esc(label)}</text>
             </g>
-          </g>
-        </g>`;
+          </g>`);
     });
+
+    // the open slot: a dashed planet on the next free orbit, linking to how to contribute
+    planets += orbit(n, (start, unspin) => `
+          <g class="planet slot" transform="translate(${(C + radius(n)).toFixed(1)} ${C})"
+             tabindex="0" role="link" aria-label="Open slot: room for the next script. Read how to contribute.">
+            <title>open slot — room for the next script</title>
+            <g class="unspin" transform="rotate(${-start})">${unspin}
+              <circle class="slot-body" r="9" fill="rgba(5,7,15,.75)" stroke="var(--ink-faint)"/>
+              <path class="slot-plus" d="M-4 0h8M0 -4v8" stroke="var(--ink-faint)"/>
+              <text class="plabel" y="23" text-anchor="middle">next</text>
+            </g>
+          </g>`);
 
     const sun = `
       <g class="sun" aria-hidden="true">
@@ -1497,11 +1577,19 @@
   }
   renderOrbits();
 
+  const SLOT_CAPTION = "open slot — room for the next script. Click it to see how to contribute.";
   function setCaption(file, active) {
-    if (!file) { orbitCaption.textContent = "Hover a planet to pause the orbits. Click one to run it."; return; }
-    const s = SCRIPTS.find((x) => x.file === file);
+    const s = file && SCRIPTS.find((x) => x.file === file);
+    if (!s) {
+      orbitCaption.textContent = SCRIPTS.length
+        ? "Hover a planet to pause the orbits. Click one to run it."
+        : "Nothing in orbit yet. The first launch is coming soon.";
+      return;
+    }
     orbitCaption.innerHTML = `${active ? "▶ " : ""}<b>${esc(file)}</b> — ${esc(s.title)}`;
   }
+  const hoverCaption = (p) => (p.classList.contains("slot") ? (orbitCaption.textContent = SLOT_CAPTION) : setCaption(p.dataset.file, false));
+  const activatePlanet = (g) => (g.classList.contains("slot") ? goTo("#about") : showDemo(g.dataset.file));
 
   /* pause orbits while hovering, and whenever the map is off screen */
   const orbitPause = { hover: false, off: false };
@@ -1515,7 +1603,7 @@
 
   orbitMap.addEventListener("pointerover", (e) => {
     const p = e.target.closest(".planet");
-    if (p) setCaption(p.dataset.file, false);
+    if (p) hoverCaption(p);
   });
   orbitMap.addEventListener("pointerout", (e) => {
     const p = e.target.closest(".planet");
@@ -1523,7 +1611,7 @@
   });
   orbitMap.addEventListener("focusin", (e) => {
     const p = e.target.closest(".planet");
-    if (p) setCaption(p.dataset.file, false);
+    if (p) hoverCaption(p);
   });
 
   function showDemo(file) {
@@ -1535,13 +1623,13 @@
   }
   orbitMap.addEventListener("click", (e) => {
     const g = e.target.closest(".planet");
-    if (g) showDemo(g.dataset.file);
+    if (g) activatePlanet(g);
   });
   orbitMap.addEventListener("keydown", (e) => {
     const g = e.target.closest(".planet");
     if (g && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
-      showDemo(g.dataset.file);
+      activatePlanet(g);
     }
   });
 
@@ -1553,7 +1641,7 @@
   const termStatus = $("#termStatus");
   let runId = 0;
 
-  SCRIPTS.forEach((s) => {
+  DEMOS.forEach((s) => {
     const b = document.createElement("button");
     b.type = "button";
     b.setAttribute("role", "tab");
@@ -1574,7 +1662,7 @@
 
   async function play(file) {
     const id = ++runId;
-    const s = SCRIPTS.find((x) => x.file === file);
+    const s = DEMOS.find((x) => x.file === file);
     if (!s) return;
     activeFile = file;
 
@@ -1647,7 +1735,7 @@
     next.focus();
     play(next.dataset.file);
   });
-  $("#rerun").addEventListener("click", () => play(activeFile || SCRIPTS[0].file));
+  $("#rerun").addEventListener("click", () => play(activeFile || DEMOS[0].file));
 
   list.addEventListener("click", (e) => {
     const b = e.target.closest("button[data-demo]");
@@ -1872,9 +1960,10 @@
       { group: "go", label: "Back to launch", hint: "#top", kw: "top home hero", run: () => window.scrollTo({ top: 0, behavior: scrollBehavior() }) },
       ...SCRIPTS.map((s) => ({ group: "open", label: `Open ${s.file}`, hint: s.title, kw: s.keywords.join(" "), run: () => openScript(s) })),
       ...SCRIPTS.map((s) => ({ group: "run", label: `Run ${s.file}`, hint: "sample run in mission control", kw: `demo console ${s.keywords.join(" ")}`, run: () => showDemo(s.file) })),
+      { group: "run", label: "Run status.py", hint: "mission status readout", kw: "demo console telemetry", run: () => showDemo(STATUS.file) },
       { group: "action", label: "Copy clone command", hint: `git clone ${REPO.name}`, kw: "git repo clipboard", run: async () => { toast((await copyText(`git clone ${REPO_URL}.git`)) ? "COPIED · git clone" : "COPY FAILED"); } },
       { group: "action", label: "Open repository on GitHub", hint: REPO_URL.replace("https://", ""), kw: "source code", run: () => window.open(REPO_URL, "_blank", "noopener") },
-      { group: "action", label: "Focus search", hint: "/", kw: "find filter", run: () => { goTo("#scripts"); setTimeout(() => input.focus({ preventScroll: true }), 50); } },
+      ...(SCRIPTS.length ? [{ group: "action", label: "Focus search", hint: "/", kw: "find filter", run: () => { goTo("#scripts"); setTimeout(() => input.focus({ preventScroll: true }), 50); } }] : []),
       { group: "action", label: sky.on ? "Turn off the starfield" : "Turn on the starfield", hint: "background", kw: "stars sky performance toggle", run: () => { setStars(!sky.on); toast(sky.on ? "STARFIELD ON" : "STARFIELD OFF"); } },
       { group: "action", label: "Engage hyperdrive", hint: "↑↑↓↓←→←→BA", kw: "warp speed easter egg konami", run: hyperdrive }
     ];
@@ -1980,7 +2069,7 @@
   window.addEventListener("hashchange", openFromHash);
   layoutRail();
   updateScroll();
-  play("dupe_finder.py");
+  play(newest ? newest.file : STATUS.file);
 })();
 </script>
 </body>
